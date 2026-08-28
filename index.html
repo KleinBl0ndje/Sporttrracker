@@ -1699,7 +1699,8 @@ async function updateGewichtEntry(id, inputEl) {
   if (gewicht === '') { toast('Vul een gewicht in'); return; }
   try {
     await api('updateGewicht', { id, gewicht });
-    allData = await api('getAll');
+    const gewichtEntry = allData.gewicht.find(g => g.Id === id);
+    if (gewichtEntry) gewichtEntry.Gewicht = Number(gewicht);
     renderGewicht();
     toast('Meting bijgewerkt');
   } catch (e) { toast('Fout: ' + e.message); }
@@ -1708,7 +1709,7 @@ async function updateGewichtEntry(id, inputEl) {
 async function deleteGewichtEntry(id) {
   try {
     await api('deleteGewicht', { id });
-    allData = await api('getAll');
+    allData.gewicht = allData.gewicht.filter(g => g.Id !== id);
     renderGewicht();
     toast('Meting verwijderd');
   } catch (e) { toast('Fout: ' + e.message); }
@@ -1794,14 +1795,19 @@ async function submitGewicht(btnEl) {
   try {
     const fotoInput = document.getElementById('gewichtFoto');
     const foto = await readAndCompressImage(fotoInput.files && fotoInput.files[0]);
-    await api('addGewicht', { datum, gewicht: waarde, foto });
+    const res = await api('addGewicht', { datum, gewicht: waarde, foto });
+    allData.gewicht.push({ Id: res.id, Datum: datum, Gewicht: Number(waarde), Foto: foto || '' });
     document.getElementById('gewichtWaarde').value = '';
     fotoInput.value = '';
     document.getElementById('gewichtFotoPreview').innerHTML = '';
     await confirmSaveButton(btnEl);
     closeModal();
     toast('Gewicht opgeslagen');
-    await loadData();
+    renderGewicht();
+    renderGeschiedenis();
+    renderKlachten();
+    renderGeplandeList();
+    if (activeTraining) renderActiveExerciseList();
   } catch (e) { toast('Fout: ' + e.message); }
 }
 
@@ -1820,13 +1826,14 @@ async function submitKlacht(btnEl) {
   const notitie = document.getElementById('klachtNotitie').value.trim();
   if (!datum || !plek) { toast('Kies een datum en plek'); return; }
   try {
-    await api('addKlacht', { datum, plek, ernst: selectedKlachtErnst, notitie });
+    const ernst = selectedKlachtErnst;
+    const res = await api('addKlacht', { datum, plek, ernst, notitie });
+    allData.klachten.push({ Id: res.id, Datum: datum, Plek: plek, Ernst: ernst, Notitie: notitie });
     document.getElementById('klachtPlek').value = '';
     document.getElementById('klachtNotitie').value = '';
     selectKlachtErnst('licht');
     await confirmSaveButton(btnEl);
     toast('Klacht opgeslagen');
-    allData = await api('getAll');
     renderKlachten();
   } catch (e) { toast('Fout: ' + e.message); }
 }
@@ -1862,7 +1869,7 @@ function renderKlachten() {
 async function deleteKlachtEntry(id) {
   try {
     await api('deleteKlacht', { id });
-    allData = await api('getAll');
+    allData.klachten = allData.klachten.filter(k => k.Id !== id);
     renderKlachten();
     toast('Klacht verwijderd');
   } catch (e) { toast('Fout: ' + e.message); }
@@ -1903,11 +1910,18 @@ async function submitStappen(btnEl) {
   if (!datum || !aantal) { toast('Vul datum en aantal stappen in'); return; }
   try {
     await api('addStappen', { datum, aantal });
+    const stappenEntry = allData.stappen.find(s => s.Datum === datum);
+    if (stappenEntry) stappenEntry.Aantal = Number(aantal);
+    else allData.stappen.push({ Datum: datum, Aantal: Number(aantal) });
     document.getElementById('stappenAantal').value = '';
     await confirmSaveButton(btnEl);
     closeModal();
     toast('Stappen opgeslagen');
-    await loadData();
+    renderGewicht();
+    renderGeschiedenis();
+    renderKlachten();
+    renderGeplandeList();
+    if (activeTraining) renderActiveExerciseList();
   } catch (e) { toast('Fout: ' + e.message); }
 }
 
@@ -2045,6 +2059,7 @@ async function startTraining() {
   const spiergroepen = selectedTrainingSpiergroepen.slice();
   try {
     const res = await api('addTraining', { datum, locatie, sportschool, spiergroepen: spiergroepen.join(',') });
+    allData.trainingen.push({ Datum: datum, Locatie: locatie, Sportschool: sportschool || '', TrainingID: res.trainingId, Spiergroepen: spiergroepen.join(','), Emoji: '', AfrondNotitie: '' });
     activateTrainingUI(res.trainingId, datum, locatie, sportschool, spiergroepen);
     toast('Training gestart — voeg nu oefeningen toe via +');
   } catch (e) { toast('Fout: ' + e.message); }
@@ -2057,6 +2072,7 @@ async function startTemplate(id) {
   const spiergroepen = t.Spiergroepen ? t.Spiergroepen.split(',').filter(Boolean) : [];
   try {
     const res = await api('addTraining', { datum, locatie: t.Locatie, sportschool: t.Sportschool, spiergroepen: spiergroepen.join(',') });
+    allData.trainingen.push({ Datum: datum, Locatie: t.Locatie, Sportschool: t.Sportschool || '', TrainingID: res.trainingId, Spiergroepen: spiergroepen.join(','), Emoji: '', AfrondNotitie: '' });
     activateTrainingUI(res.trainingId, datum, t.Locatie, t.Sportschool, spiergroepen);
     templateQueue = (t.Oefeningen || []).slice();
     renderTemplateQueue();
@@ -2067,7 +2083,7 @@ async function startTemplate(id) {
 async function deleteTemplateEntry(id) {
   try {
     await api('deleteTemplate', { id });
-    allData = await api('getAll');
+    allData.templates = allData.templates.filter(t => t.Id !== id);
     renderQuickStart();
     toast('Sjabloon verwijderd');
   } catch (e) { toast('Fout: ' + e.message); }
@@ -2081,8 +2097,8 @@ async function planTrainingForLater() {
   const templateSelect = document.getElementById('planTemplateSelect');
   const templateId = templateSelect ? templateSelect.value : '';
   try {
-    await api('addGeplandeTraining', { datum, locatie, sportschool, spiergroepen: spiergroepen.join(','), templateId });
-    allData = await api('getAll');
+    const res = await api('addGeplandeTraining', { datum, locatie, sportschool, spiergroepen: spiergroepen.join(','), templateId });
+    allData.geplande.push({ Id: res.id, Datum: datum, Locatie: locatie, Sportschool: sportschool || '', Spiergroepen: spiergroepen.join(','), TemplateId: templateId || '' });
     selectedTrainingSpiergroepen = [];
     document.querySelectorAll('#trainingSpiergroepenRow .chip-btn').forEach(b => b.classList.remove('selected', 'suggested'));
     renderGeplandeList();
@@ -2121,7 +2137,8 @@ async function startGeplandeTraining(id) {
   try {
     const res = await api('addTraining', { datum, locatie: g.Locatie, sportschool: g.Sportschool, spiergroepen: spiergroepen.join(',') });
     await api('deleteGeplandeTraining', { id });
-    allData = await api('getAll');
+    allData.trainingen.push({ Datum: datum, Locatie: g.Locatie, Sportschool: g.Sportschool || '', TrainingID: res.trainingId, Spiergroepen: spiergroepen.join(','), Emoji: '', AfrondNotitie: '' });
+    allData.geplande = allData.geplande.filter(x => x.Id !== id);
     activateTrainingUI(res.trainingId, datum, g.Locatie, g.Sportschool, spiergroepen);
     const template = g.TemplateId ? (allData.templates || []).find(t => t.Id === g.TemplateId) : null;
     templateQueue = template ? (template.Oefeningen || []).slice() : [];
@@ -2134,7 +2151,7 @@ async function startGeplandeTraining(id) {
 async function deleteGeplandeEntry(id) {
   try {
     await api('deleteGeplandeTraining', { id });
-    allData = await api('getAll');
+    allData.geplande = allData.geplande.filter(x => x.Id !== id);
     renderGeplandeList();
     toast('Geplande training verwijderd');
   } catch (e) { toast('Fout: ' + e.message); }
@@ -2185,11 +2202,14 @@ async function saveCurrentAsTemplate() {
   });
   if (!oefeningen.length) { toast('Log eerst minstens 1 oefening'); return; }
   try {
-    await api('saveTemplate', {
+    const res = await api('saveTemplate', {
       naam, locatie: activeTraining.locatie, sportschool: activeTraining.sportschool,
       spiergroepen: (activeTraining.spiergroepen || []).join(','), oefeningen
     });
-    allData = await api('getAll');
+    allData.templates.push({
+      Id: res.id, Naam: naam, Locatie: activeTraining.locatie || '', Sportschool: activeTraining.sportschool || '',
+      Spiergroepen: (activeTraining.spiergroepen || []).join(','), Oefeningen: oefeningen
+    });
     if (naamInput) naamInput.value = '';
     toast(`Sjabloon "${naam}" bewaard`);
   } catch (e) { toast('Fout: ' + e.message); }
@@ -2252,12 +2272,16 @@ async function submitWarmup(btnEl) {
   const duur = document.getElementById('warmupDuur').value;
   if (!naam) { toast('Kies of vul een type warming-up in'); return; }
   try {
-    await api('addOefening', {
+    const res = await api('addOefening', {
       trainingId: activeTraining.trainingId, datum: activeTraining.datum,
       oefening: naam, spiergroep: '', set: 1, reps: '', gewicht: '',
       warmup: '1', interval: '', type: 'warmup', duur
     });
-    allData = await api('getAll');
+    allData.oefeningen.push({
+      Id: res.id, TrainingID: activeTraining.trainingId, Datum: activeTraining.datum,
+      Oefening: naam, Spiergroep: '', Set: 1, Reps: '', Gewicht: '', Warmup: true,
+      Interval: '', Type: 'warmup', Duur: duur, LoggedAt: new Date().toISOString()
+    });
     renderActiveExerciseList();
     await confirmSaveButton(btnEl);
     toast('Warming-up opgeslagen');
@@ -2278,11 +2302,15 @@ async function submitCardio(btnEl) {
   const tijd = tijdEl ? tijdEl.value : '';
   if (!tijd) { toast('Vul een tijd in minuten in'); return; }
   try {
-    await api('addOefening', {
+    const res = await api('addOefening', {
       trainingId: activeTraining.trainingId, datum: activeTraining.datum,
       oefening, spiergroep, set: 1, reps: '', gewicht: '', warmup: '', interval, duur: tijd
     });
-    allData = await api('getAll');
+    allData.oefeningen.push({
+      Id: res.id, TrainingID: activeTraining.trainingId, Datum: activeTraining.datum,
+      Oefening: oefening, Spiergroep: spiergroep, Set: 1, Reps: '', Gewicht: '', Warmup: false,
+      Interval: interval, Type: 'training', Duur: tijd, LoggedAt: new Date().toISOString()
+    });
     renderActiveExerciseList();
     exerciseCount = allData.oefeningen.filter(o => o.TrainingID === activeTraining.trainingId && o.Type !== 'warmup').length;
     document.getElementById('activeTrainingSummary').textContent = `${exerciseCount} ${exerciseCount === 1 ? 'set' : 'sets'} gelogd`;
@@ -2320,14 +2348,20 @@ async function submitOefening(btnEl) {
       const gewicht = row.querySelector('.set-gewicht').value;
       const warmupEl = row.querySelector('.set-warmup');
       const warmup = warmupEl && warmupEl.checked ? '1' : '';
-      await api('addOefening', {
+      const res = await api('addOefening', {
         trainingId: activeTraining.trainingId,
         datum: activeTraining.datum,
         oefening, spiergroep, set: setNum, reps, gewicht, warmup, interval
       });
+      allData.oefeningen.push({
+        Id: res.id, TrainingID: activeTraining.trainingId, Datum: activeTraining.datum,
+        Oefening: oefening, Spiergroep: spiergroep, Set: setNum,
+        Reps: reps === '' ? '' : Number(reps), Gewicht: gewicht === '' ? '' : Number(gewicht),
+        Warmup: !!warmup, Interval: interval, Type: 'training', Duur: '',
+        LoggedAt: new Date().toISOString()
+      });
       setNum++;
     }
-    allData = await api('getAll');
     renderActiveExerciseList();
     exerciseCount = allData.oefeningen.filter(o => o.TrainingID === activeTraining.trainingId && o.Type !== 'warmup').length;
     document.getElementById('activeTrainingSummary').textContent = `${exerciseCount} ${exerciseCount === 1 ? 'set' : 'sets'} gelogd`;
@@ -2389,7 +2423,12 @@ async function updateLoggedSet(id, inputEl) {
   const warmup = warmupEl && warmupEl.checked;
   try {
     await api('updateOefening', { id, reps, gewicht, warmup });
-    allData = await api('getAll');
+    const loggedEntry = allData.oefeningen.find(o => o.Id === id);
+    if (loggedEntry) {
+      loggedEntry.Reps = reps === '' ? '' : Number(reps);
+      loggedEntry.Gewicht = gewicht === '' ? '' : Number(gewicht);
+      loggedEntry.Warmup = !!warmup;
+    }
     row.classList.toggle('is-warmup', warmup);
     toast('Set bijgewerkt');
   } catch (e) { toast('Fout: ' + e.message); }
@@ -2398,7 +2437,7 @@ async function updateLoggedSet(id, inputEl) {
 async function deleteLoggedSet(id) {
   try {
     await api('deleteOefening', { id });
-    allData = await api('getAll');
+    allData.oefeningen = allData.oefeningen.filter(o => o.Id !== id);
     renderActiveExerciseList();
     exerciseCount = activeTraining ? allData.oefeningen.filter(o => o.TrainingID === activeTraining.trainingId && o.Type !== 'warmup').length : 0;
     document.getElementById('activeTrainingSummary').textContent = exerciseCount
@@ -2470,10 +2509,15 @@ async function completeFinishTraining() {
   if (!activeTraining) return;
   const notitie = document.getElementById('afrondenNotitie').value.trim();
   const trainingDatum = activeTraining.datum;
+  const trainingId = activeTraining.trainingId;
+  const emoji = selectedEmoji;
   try {
-    await api('finishTraining', { trainingId: activeTraining.trainingId, emoji: selectedEmoji, notitie });
+    await api('finishTraining', { trainingId, emoji, notitie });
+    const finishedTraining = allData.trainingen.find(t => t.TrainingID === trainingId);
+    if (finishedTraining) { finishedTraining.Emoji = emoji || ''; finishedTraining.AfrondNotitie = notitie || ''; }
     for (const k of afrondenKlachten) {
-      await api('addKlacht', { datum: trainingDatum, plek: k.plek, ernst: k.ernst, notitie: '' });
+      const res = await api('addKlacht', { datum: trainingDatum, plek: k.plek, ernst: k.ernst, notitie: '' });
+      allData.klachten.push({ Id: res.id, Datum: trainingDatum, Plek: k.plek, Ernst: k.ernst, Notitie: '' });
     }
   } catch (e) {}
   afrondenKlachten = [];
@@ -2486,7 +2530,10 @@ async function completeFinishTraining() {
   updateTrainingProgressBar();
   closeModal();
   toast('Training afgerond ' + (selectedEmoji || '💪'));
-  loadData();
+  renderGewicht();
+  renderGeschiedenis();
+  renderKlachten();
+  renderGeplandeList();
 }
 
 function isoWeekStart(d) {
@@ -2595,7 +2642,12 @@ async function updatePastSet(id, inputEl, trainingId) {
   const warmup = warmupEl && warmupEl.checked;
   try {
     await api('updateOefening', { id, reps, gewicht, warmup });
-    allData = await api('getAll');
+    const pastEntry = allData.oefeningen.find(o => o.Id === id);
+    if (pastEntry) {
+      pastEntry.Reps = reps === '' ? '' : Number(reps);
+      pastEntry.Gewicht = gewicht === '' ? '' : Number(gewicht);
+      pastEntry.Warmup = !!warmup;
+    }
     row.classList.toggle('is-warmup', warmup);
     renderSpierkaart();
     toast('Set bijgewerkt');
@@ -2605,7 +2657,7 @@ async function updatePastSet(id, inputEl, trainingId) {
 async function deletePastSet(id, trainingId) {
   try {
     await api('deleteOefening', { id });
-    allData = await api('getAll');
+    allData.oefeningen = allData.oefeningen.filter(o => o.Id !== id);
     renderTrainingList();
     renderSpierkaart();
     toast('Set verwijderd');
