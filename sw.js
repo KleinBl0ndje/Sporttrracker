@@ -1,6 +1,6 @@
 // Simpele service worker: cachet de app-schil zodat de app ook opent
 // zonder internet (data ophalen/opslaan blijft uiteraard internet nodig hebben).
-const CACHE_NAME = 'sporttracker-v3';
+const CACHE_NAME = 'sporttracker-v4';
 const APP_SHELL = [
   './',
   './index.html',

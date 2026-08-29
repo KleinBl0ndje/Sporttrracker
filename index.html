@@ -323,6 +323,7 @@
   }
   .exercise-card.selected { border-color: var(--accent); background: var(--accent-dim); }
   .exercise-card .pf { width: 34px; height: 34px; margin: 0 auto; display: block; }
+  .exercise-card .ex-media { width: 34px; height: 34px; margin: 0 auto; display: block; object-fit: cover; border-radius: 6px; background: var(--surface); }
   .exercise-card .ex-label { display: block; margin-top: 4px; font-size: 9.5px; color: var(--muted); line-height: 1.15; }
   .exercise-card.selected .ex-label { color: var(--accent-2); }
 
@@ -1301,6 +1302,147 @@ const EXERCISE_LIBRARY = [
 ];
 
 
+/* Kleine referentie-gifjes per oefening (uit het krachttraining-naslagwerk).
+   Staat een oefening hier niet in, dan valt de kaart terug op het gewone
+   oranje poppetje-icoon. */
+const EXERCISE_MEDIA = {
+  'Bodyweight squat': { photo: 'oefening-media/images/Bodyweight_Squat.jpg', animation: 'oefening-media/images/Bodyweight_Squat.gif' },
+  'Jump squat': { photo: 'oefening-media/images/Freehand_Jump_Squat.jpg', animation: 'oefening-media/images/Freehand_Jump_Squat.gif' },
+  'Banded squat, 20/10 kg': { photo: 'oefening-media/images/Squats_-_With_Bands.jpg', animation: 'oefening-media/images/Squats_-_With_Bands.gif' },
+  'Miniband squat walk': { photo: 'oefening-media/images/Monster_Walk.jpg', animation: 'oefening-media/images/Monster_Walk.gif' },
+  'Goblet squat': { photo: 'oefening-media/images/Goblet_Squat.jpg', animation: 'oefening-media/images/Goblet_Squat.gif' },
+  'Kettlebell front squat': { photo: 'oefening-media/images/Front_Squats_With_Two_Kettlebells.jpg', animation: 'oefening-media/images/Front_Squats_With_Two_Kettlebells.gif' },
+  'Kettlebell box squat': { photo: 'oefening-media/images/Front_Squats_With_Two_Kettlebells.jpg', animation: 'oefening-media/images/Front_Squats_With_Two_Kettlebells.gif' },
+  'Dumbbell reverse lunge': { photo: 'oefening-media/images/Crossover_Reverse_Lunge.jpg', animation: 'oefening-media/images/Crossover_Reverse_Lunge.gif' },
+  'Dumbbell Bulgarian split squat': { photo: 'oefening-media/images/Split_Squat_with_Dumbbells.jpg', animation: 'oefening-media/images/Split_Squat_with_Dumbbells.gif' },
+  'Dumbbell walking lunge': { photo: 'oefening-media/images/Dumbbell_Lunges.jpg', animation: 'oefening-media/images/Dumbbell_Lunges.gif' },
+  'Dumbbell step-up': { photo: 'oefening-media/images/Dumbbell_Step_Ups.jpg', animation: 'oefening-media/images/Dumbbell_Step_Ups.gif' },
+  'Legpress': { photo: 'oefening-media/images/Leg_Press.jpg', animation: 'oefening-media/images/Leg_Press.gif' },
+  'Legextension': { photo: 'oefening-media/images/Leg_Extensions.jpg', animation: 'oefening-media/images/Leg_Extensions.gif' },
+  'Hackpress (liggend)': { photo: 'oefening-media/images/Hack_Squat.jpg', animation: 'oefening-media/images/Hack_Squat.gif' },
+  'Hackpress (staand)': { photo: 'oefening-media/images/Hack_Squat.jpg', animation: 'oefening-media/images/Hack_Squat.gif' },
+  'Smith machine squat': { photo: 'oefening-media/images/Smith_Machine_Squat.jpg', animation: 'oefening-media/images/Smith_Machine_Squat.gif' },
+  'Banded Romanian deadlift, 20/10 kg': { photo: 'oefening-media/images/Band_Good_Morning_Pull_Through.jpg', animation: 'oefening-media/images/Band_Good_Morning_Pull_Through.gif' },
+  'Banded good morning, 20/10 kg': { photo: 'oefening-media/images/Band_Good_Morning.jpg', animation: 'oefening-media/images/Band_Good_Morning.gif' },
+  'Standing single-leg deadlift': { photo: 'oefening-media/images/Rear_Leg_Raises.jpg', animation: 'oefening-media/images/Rear_Leg_Raises.gif' },
+  'Miniband good morning': { photo: 'oefening-media/images/Band_Good_Morning.jpg', animation: 'oefening-media/images/Band_Good_Morning.gif' },
+  'Kettlebell swing': { photo: 'oefening-media/images/One-Arm_Kettlebell_Swings.jpg', animation: 'oefening-media/images/One-Arm_Kettlebell_Swings.gif' },
+  'Kettlebell single-leg deadlift': { photo: 'oefening-media/images/Kettlebell_One-Legged_Deadlift.jpg', animation: 'oefening-media/images/Kettlebell_One-Legged_Deadlift.gif' },
+  'Dumbbell stiff-leg deadlift': { photo: 'oefening-media/images/Stiff-Legged_Dumbbell_Deadlift.jpg', animation: 'oefening-media/images/Stiff-Legged_Dumbbell_Deadlift.gif' },
+  'Dumbbell single-leg RDL': { photo: 'oefening-media/images/Kettlebell_One-Legged_Deadlift.jpg', animation: 'oefening-media/images/Kettlebell_One-Legged_Deadlift.gif' },
+  'Lying legcurl': { photo: 'oefening-media/images/Lying_Leg_Curls.jpg', animation: 'oefening-media/images/Lying_Leg_Curls.gif' },
+  'Standing legcurl': { photo: 'oefening-media/images/Standing_Leg_Curl.jpg', animation: 'oefening-media/images/Standing_Leg_Curl.gif' },
+  'Glute-ham raise machine': { photo: 'oefening-media/images/Glute_Ham_Raise.jpg', animation: 'oefening-media/images/Glute_Ham_Raise.gif' },
+  'Cable pull-through': { photo: 'oefening-media/images/Pull_Through.jpg', animation: 'oefening-media/images/Pull_Through.gif' },
+  'Banded hip thrust, 20/10 kg': { photo: 'oefening-media/images/Hip_Lift_with_Band.jpg', animation: 'oefening-media/images/Hip_Lift_with_Band.gif' },
+  'Banded kickback, 20/10 kg': { photo: 'oefening-media/images/Glute_Kickback.jpg', animation: 'oefening-media/images/Glute_Kickback.gif' },
+  'Miniband lateral walk': { photo: 'oefening-media/images/Monster_Walk.jpg', animation: 'oefening-media/images/Monster_Walk.gif' },
+  'Miniband hip thrust': { photo: 'oefening-media/images/Hip_Lift_with_Band.jpg', animation: 'oefening-media/images/Hip_Lift_with_Band.gif' },
+  'Kettlebell goblet squat': { photo: 'oefening-media/images/Goblet_Squat.jpg', animation: 'oefening-media/images/Goblet_Squat.gif' },
+  'Dumbbell glute bridge': { photo: 'oefening-media/images/Single_Leg_Glute_Bridge.jpg', animation: 'oefening-media/images/Single_Leg_Glute_Bridge.gif' },
+  'Abductor machine': { photo: 'oefening-media/images/Thigh_Abductor.jpg', animation: 'oefening-media/images/Thigh_Abductor.gif' },
+  'Banded calf raise, 20/10 kg': { photo: 'oefening-media/images/Calf_Raises_-_With_Bands.jpg', animation: 'oefening-media/images/Calf_Raises_-_With_Bands.gif' },
+  'Banded seated calf raise, 20/10 kg': { photo: 'oefening-media/images/Calf_Raises_-_With_Bands.jpg', animation: 'oefening-media/images/Calf_Raises_-_With_Bands.gif' },
+  'Jump rope': { photo: 'oefening-media/images/Rope_Jumping.jpg', animation: 'oefening-media/images/Rope_Jumping.gif' },
+  'Pogo hops': { photo: 'oefening-media/images/Frog_Hops.jpg', animation: 'oefening-media/images/Frog_Hops.gif' },
+  'Standing dumbbell calf raise': { photo: 'oefening-media/images/Standing_Dumbbell_Calf_Raise.jpg', animation: 'oefening-media/images/Standing_Dumbbell_Calf_Raise.gif' },
+  'Single-leg dumbbell calf raise': { photo: 'oefening-media/images/Dumbbell_Seated_One-Leg_Calf_Raise.jpg', animation: 'oefening-media/images/Dumbbell_Seated_One-Leg_Calf_Raise.gif' },
+  'Seated dumbbell calf raise': { photo: 'oefening-media/images/Dumbbell_Seated_One-Leg_Calf_Raise.jpg', animation: 'oefening-media/images/Dumbbell_Seated_One-Leg_Calf_Raise.gif' },
+  'Dumbbell donkey calf raise': { photo: 'oefening-media/images/Donkey_Calf_Raises.jpg', animation: 'oefening-media/images/Donkey_Calf_Raises.gif' },
+  'Legpress calf raise': { photo: 'oefening-media/images/Calf_Press.jpg', animation: 'oefening-media/images/Calf_Press.gif' },
+  'Smith machine calf raise': { photo: 'oefening-media/images/Smith_Machine_Calf_Raise.jpg', animation: 'oefening-media/images/Smith_Machine_Calf_Raise.gif' },
+  'Push-ups': { photo: 'oefening-media/images/Pushups.jpg', animation: 'oefening-media/images/Pushups.gif' },
+  'Banded chest press, 20/10 kg': { photo: 'oefening-media/images/Bench_Press_-_With_Bands.jpg', animation: 'oefening-media/images/Bench_Press_-_With_Bands.gif' },
+  'Banded chest fly, 20/10 kg': { photo: 'oefening-media/images/Cross_Over_-_With_Bands.jpg', animation: 'oefening-media/images/Cross_Over_-_With_Bands.gif' },
+  'Diamond push-ups': { photo: 'oefening-media/images/Close-Grip_Push-Up_off_of_a_Dumbbell.jpg', animation: 'oefening-media/images/Close-Grip_Push-Up_off_of_a_Dumbbell.gif' },
+  'Dumbbell bench press': { photo: 'oefening-media/images/Dumbbell_Bench_Press.jpg', animation: 'oefening-media/images/Dumbbell_Bench_Press.gif' },
+  'Dumbbell flyes': { photo: 'oefening-media/images/Dumbbell_Flyes.jpg', animation: 'oefening-media/images/Dumbbell_Flyes.gif' },
+  'Dumbbell floor press': { photo: 'oefening-media/images/Dumbbell_Floor_Press.jpg', animation: 'oefening-media/images/Dumbbell_Floor_Press.gif' },
+  'Incline dumbbell press': { photo: 'oefening-media/images/Dumbbell_Bench_Press.jpg', animation: 'oefening-media/images/Dumbbell_Bench_Press.gif' },
+  'Chest press machine': { photo: 'oefening-media/images/Machine_Bench_Press.jpg', animation: 'oefening-media/images/Machine_Bench_Press.gif' },
+  'Pec deck': { photo: 'oefening-media/images/Butterfly.jpg', animation: 'oefening-media/images/Butterfly.gif' },
+  'Incline chest press machine': { photo: 'oefening-media/images/Incline_Cable_Chest_Press.jpg', animation: 'oefening-media/images/Incline_Cable_Chest_Press.gif' },
+  'Smith machine bench press': { photo: 'oefening-media/images/Smith_Machine_Bench_Press.jpg', animation: 'oefening-media/images/Smith_Machine_Bench_Press.gif' },
+  'Banded seated row, 20/10 kg': { photo: 'oefening-media/images/Back_Flyes_-_With_Bands.jpg', animation: 'oefening-media/images/Back_Flyes_-_With_Bands.gif' },
+  'Banded pull-apart, 20/10 kg': { photo: 'oefening-media/images/Band_Pull_Apart.jpg', animation: 'oefening-media/images/Band_Pull_Apart.gif' },
+  'Banded straight-arm pulldown, 20/10 kg': { photo: 'oefening-media/images/Band_Pull_Apart.jpg', animation: 'oefening-media/images/Band_Pull_Apart.gif' },
+  'Superman': { photo: 'oefening-media/images/Superman.jpg', animation: 'oefening-media/images/Superman.gif' },
+  'Kettlebell row': { photo: 'oefening-media/images/Alternating_Kettlebell_Row.jpg', animation: 'oefening-media/images/Alternating_Kettlebell_Row.gif' },
+  'Single-arm kettlebell row': { photo: 'oefening-media/images/Alternating_Kettlebell_Row.jpg', animation: 'oefening-media/images/Alternating_Kettlebell_Row.gif' },
+  'Kettlebell high pull': { photo: 'oefening-media/images/Kettlebell_Sumo_High_Pull.jpg', animation: 'oefening-media/images/Kettlebell_Sumo_High_Pull.gif' },
+  'Dumbbell row': { photo: 'oefening-media/images/One-Arm_Dumbbell_Row.jpg', animation: 'oefening-media/images/One-Arm_Dumbbell_Row.gif' },
+  'Dumbbell deadlift': { photo: 'oefening-media/images/Stiff-Legged_Dumbbell_Deadlift.jpg', animation: 'oefening-media/images/Stiff-Legged_Dumbbell_Deadlift.gif' },
+  'Dumbbell pullover': { photo: 'oefening-media/images/Bent-Arm_Dumbbell_Pullover.jpg', animation: 'oefening-media/images/Bent-Arm_Dumbbell_Pullover.gif' },
+  'Lat pulldown machine': { photo: 'oefening-media/images/Wide-Grip_Lat_Pulldown.jpg', animation: 'oefening-media/images/Wide-Grip_Lat_Pulldown.gif' },
+  'Banded shoulder press, 20/10 kg': { photo: 'oefening-media/images/Shoulder_Press_-_With_Bands.jpg', animation: 'oefening-media/images/Shoulder_Press_-_With_Bands.gif' },
+  'Banded lateral raise, 20/10 kg': { photo: 'oefening-media/images/Lateral_Raise_-_With_Bands.jpg', animation: 'oefening-media/images/Lateral_Raise_-_With_Bands.gif' },
+  'Banded upright row, 20/10 kg': { photo: 'oefening-media/images/Upright_Row_-_With_Bands.jpg', animation: 'oefening-media/images/Upright_Row_-_With_Bands.gif' },
+  'Pike push-up': { photo: 'oefening-media/images/Handstand_Push-Ups.jpg', animation: 'oefening-media/images/Handstand_Push-Ups.gif' },
+  'Kettlebell overhead press': { photo: 'oefening-media/images/Kettlebell_Arnold_Press.jpg', animation: 'oefening-media/images/Kettlebell_Arnold_Press.gif' },
+  'Kettlebell Arnold press': { photo: 'oefening-media/images/Kettlebell_Arnold_Press.jpg', animation: 'oefening-media/images/Kettlebell_Arnold_Press.gif' },
+  'Kettlebell halo': { photo: 'oefening-media/images/Kettlebell_Windmill.jpg', animation: 'oefening-media/images/Kettlebell_Windmill.gif' },
+  'Kettlebell around-the-world': { photo: 'oefening-media/images/Around_The_Worlds.jpg', animation: 'oefening-media/images/Around_The_Worlds.gif' },
+  'Dumbbell shoulder press': { photo: 'oefening-media/images/Dumbbell_Shoulder_Press.jpg', animation: 'oefening-media/images/Dumbbell_Shoulder_Press.gif' },
+  'Arnold press': { photo: 'oefening-media/images/Arnold_Dumbbell_Press.jpg', animation: 'oefening-media/images/Arnold_Dumbbell_Press.gif' },
+  'Lateral raises': { photo: 'oefening-media/images/Side_Lateral_Raise.jpg', animation: 'oefening-media/images/Side_Lateral_Raise.gif' },
+  'Front raises': { photo: 'oefening-media/images/Front_Dumbbell_Raise.jpg', animation: 'oefening-media/images/Front_Dumbbell_Raise.gif' },
+  'Shoulder press machine': { photo: 'oefening-media/images/Leverage_Shoulder_Press.jpg', animation: 'oefening-media/images/Leverage_Shoulder_Press.gif' },
+  'Smith machine shoulder press': { photo: 'oefening-media/images/Smith_Machine_Overhead_Shoulder_Press.jpg', animation: 'oefening-media/images/Smith_Machine_Overhead_Shoulder_Press.gif' },
+  'Reverse pec deck': { photo: 'oefening-media/images/Reverse_Machine_Flyes.jpg', animation: 'oefening-media/images/Reverse_Machine_Flyes.gif' },
+  'Cable lateral raise': { photo: 'oefening-media/images/Cable_Seated_Lateral_Raise.jpg', animation: 'oefening-media/images/Cable_Seated_Lateral_Raise.gif' },
+  'Kettlebell curl': { photo: 'oefening-media/images/Standing_Concentration_Curl.jpg', animation: 'oefening-media/images/Standing_Concentration_Curl.gif' },
+  'Dumbbell curl': { photo: 'oefening-media/images/Dumbbell_Bicep_Curl.jpg', animation: 'oefening-media/images/Dumbbell_Bicep_Curl.gif' },
+  'Hammer curl': { photo: 'oefening-media/images/Hammer_Curls.jpg', animation: 'oefening-media/images/Hammer_Curls.gif' },
+  'Concentration curl': { photo: 'oefening-media/images/Concentration_Curls.jpg', animation: 'oefening-media/images/Concentration_Curls.gif' },
+  'Incline dumbbell curl': { photo: 'oefening-media/images/Incline_Dumbbell_Curl.jpg', animation: 'oefening-media/images/Incline_Dumbbell_Curl.gif' },
+  'Bicep curl machine': { photo: 'oefening-media/images/Machine_Bicep_Curl.jpg', animation: 'oefening-media/images/Machine_Bicep_Curl.gif' },
+  'Cable curl': { photo: 'oefening-media/images/Standing_Biceps_Cable_Curl.jpg', animation: 'oefening-media/images/Standing_Biceps_Cable_Curl.gif' },
+  'Cable hammer curl': { photo: 'oefening-media/images/Cable_Hammer_Curls_-_Rope_Attachment.jpg', animation: 'oefening-media/images/Cable_Hammer_Curls_-_Rope_Attachment.gif' },
+  'Banded tricep pushdown, 20/10 kg': { photo: 'oefening-media/images/Speed_Band_Overhead_Triceps.jpg', animation: 'oefening-media/images/Speed_Band_Overhead_Triceps.gif' },
+  'Banded overhead extension, 20/10 kg': { photo: 'oefening-media/images/Speed_Band_Overhead_Triceps.jpg', animation: 'oefening-media/images/Speed_Band_Overhead_Triceps.gif' },
+  'Banded skull crusher, 20/10 kg': { photo: 'oefening-media/images/Band_Skull_Crusher.jpg', animation: 'oefening-media/images/Band_Skull_Crusher.gif' },
+  'Close-grip push-ups': { photo: 'oefening-media/images/Close-Grip_Push-Up_off_of_a_Dumbbell.jpg', animation: 'oefening-media/images/Close-Grip_Push-Up_off_of_a_Dumbbell.gif' },
+  'Kettlebell overhead extension': { photo: 'oefening-media/images/Sled_Overhead_Triceps_Extension.jpg', animation: 'oefening-media/images/Sled_Overhead_Triceps_Extension.gif' },
+  'Dumbbell overhead extension': { photo: 'oefening-media/images/Sled_Overhead_Triceps_Extension.jpg', animation: 'oefening-media/images/Sled_Overhead_Triceps_Extension.gif' },
+  'Dumbbell kickback': { photo: 'oefening-media/images/Tricep_Dumbbell_Kickback.jpg', animation: 'oefening-media/images/Tricep_Dumbbell_Kickback.gif' },
+  'Dumbbell tate press': { photo: 'oefening-media/images/Tate_Press.jpg', animation: 'oefening-media/images/Tate_Press.gif' },
+  'Dumbbell close-grip floor press': { photo: 'oefening-media/images/Close-Grip_Dumbbell_Press.jpg', animation: 'oefening-media/images/Close-Grip_Dumbbell_Press.gif' },
+  'Tricep pushdown': { photo: 'oefening-media/images/Triceps_Pushdown.jpg', animation: 'oefening-media/images/Triceps_Pushdown.gif' },
+  'Cable overhead extension': { photo: 'oefening-media/images/Cable_Rope_Overhead_Triceps_Extension.jpg', animation: 'oefening-media/images/Cable_Rope_Overhead_Triceps_Extension.gif' },
+  'Banded woodchopper, 20/10 kg': { photo: 'oefening-media/images/Russian_Twist.jpg', animation: 'oefening-media/images/Russian_Twist.gif' },
+  'Plank': { photo: 'oefening-media/images/Plank.jpg', animation: 'oefening-media/images/Plank.gif' },
+  'Miniband dead bug': { photo: 'oefening-media/images/Dead_Bug.jpg', animation: 'oefening-media/images/Dead_Bug.gif' },
+  'Kettlebell windmill': { photo: 'oefening-media/images/Kettlebell_Windmill.jpg', animation: 'oefening-media/images/Kettlebell_Windmill.gif' },
+  'Kettlebell around-the-world (buik)': { photo: 'oefening-media/images/Around_The_Worlds.jpg', animation: 'oefening-media/images/Around_The_Worlds.gif' },
+  'Dumbbell Russian twist': { photo: 'oefening-media/images/Russian_Twist.jpg', animation: 'oefening-media/images/Russian_Twist.gif' },
+  'Dumbbell side bend': { photo: 'oefening-media/images/Dumbbell_Side_Bend.jpg', animation: 'oefening-media/images/Dumbbell_Side_Bend.gif' },
+  'Weighted sit-up': { photo: 'oefening-media/images/Weighted_Sit-Ups_-_With_Bands.jpg', animation: 'oefening-media/images/Weighted_Sit-Ups_-_With_Bands.gif' },
+  'Ab crunch machine': { photo: 'oefening-media/images/Ab_Crunch_Machine.jpg', animation: 'oefening-media/images/Ab_Crunch_Machine.gif' },
+  'Cable crunch': { photo: 'oefening-media/images/Cable_Crunch.jpg', animation: 'oefening-media/images/Cable_Crunch.gif' },
+  'Ab roller': { photo: 'oefening-media/images/Ab_Roller.jpg', animation: 'oefening-media/images/Ab_Roller.gif' },
+  'Kettlebell step-up': { photo: 'oefening-media/images/Dumbbell_Step_Ups.jpg', animation: 'oefening-media/images/Dumbbell_Step_Ups.gif' },
+  'Kettlebell Romanian deadlift': { photo: 'oefening-media/images/Stiff-Legged_Dumbbell_Deadlift.jpg', animation: 'oefening-media/images/Stiff-Legged_Dumbbell_Deadlift.gif' },
+  'Dumbbell Romanian deadlift': { photo: 'oefening-media/images/Stiff-Legged_Dumbbell_Deadlift.jpg', animation: 'oefening-media/images/Stiff-Legged_Dumbbell_Deadlift.gif' },
+  'Dumbbell good morning': { photo: 'oefening-media/images/Stiff-Legged_Dumbbell_Deadlift.jpg', animation: 'oefening-media/images/Stiff-Legged_Dumbbell_Deadlift.gif' },
+  'Dumbbell step-up, bil-focus': { photo: 'oefening-media/images/Dumbbell_Step_Ups.jpg', animation: 'oefening-media/images/Dumbbell_Step_Ups.gif' },
+  'Staande kettlebell calf raise': { photo: 'oefening-media/images/Standing_Dumbbell_Calf_Raise.jpg', animation: 'oefening-media/images/Standing_Dumbbell_Calf_Raise.gif' },
+  'Single-leg kettlebell calf raise': { photo: 'oefening-media/images/Dumbbell_Seated_One-Leg_Calf_Raise.jpg', animation: 'oefening-media/images/Dumbbell_Seated_One-Leg_Calf_Raise.gif' },
+  'Zittende kettlebell calf raise': { photo: 'oefening-media/images/Dumbbell_Seated_One-Leg_Calf_Raise.jpg', animation: 'oefening-media/images/Dumbbell_Seated_One-Leg_Calf_Raise.gif' },
+  'Calf raise machine, staand': { photo: 'oefening-media/images/Standing_Calf_Raises.jpg', animation: 'oefening-media/images/Standing_Calf_Raises.gif' },
+  'Kettlebell floor press': { photo: 'oefening-media/images/Dumbbell_Floor_Press.jpg', animation: 'oefening-media/images/Dumbbell_Floor_Press.gif' },
+  'Single-arm kettlebell floor press': { photo: 'oefening-media/images/One-Arm_Kettlebell_Floor_Press.jpg', animation: 'oefening-media/images/One-Arm_Kettlebell_Floor_Press.gif' },
+  'Kettlebell pullover': { photo: 'oefening-media/images/Bent-Arm_Dumbbell_Pullover.jpg', animation: 'oefening-media/images/Bent-Arm_Dumbbell_Pullover.gif' },
+  'Renegade row, kettlebells': { photo: 'oefening-media/images/Alternating_Renegade_Row.jpg', animation: 'oefening-media/images/Alternating_Renegade_Row.gif' },
+  'Renegade row, dumbbells': { photo: 'oefening-media/images/Alternating_Renegade_Row.jpg', animation: 'oefening-media/images/Alternating_Renegade_Row.gif' },
+  'Kettlebell hammer curl': { photo: 'oefening-media/images/Hammer_Curls.jpg', animation: 'oefening-media/images/Hammer_Curls.gif' },
+  'Alternating kettlebell curl': { photo: 'oefening-media/images/Dumbbell_Bicep_Curl.jpg', animation: 'oefening-media/images/Dumbbell_Bicep_Curl.gif' },
+  'Kettlebell concentration curl': { photo: 'oefening-media/images/Concentration_Curls.jpg', animation: 'oefening-media/images/Concentration_Curls.gif' },
+  'Kettlebell skull crusher': { photo: 'oefening-media/images/Tate_Press.jpg', animation: 'oefening-media/images/Tate_Press.gif' },
+  'Kettlebell close-grip floor press': { photo: 'oefening-media/images/Close-Grip_Dumbbell_Press.jpg', animation: 'oefening-media/images/Close-Grip_Dumbbell_Press.gif' },
+  'Close-grip Smith machine press': { photo: 'oefening-media/images/Smith_Machine_Bench_Press.jpg', animation: 'oefening-media/images/Smith_Machine_Bench_Press.gif' },
+  'Kettlebell Russian twist': { photo: 'oefening-media/images/Russian_Twist.jpg', animation: 'oefening-media/images/Russian_Twist.gif' }
+};
+
 function pictogram(motion) {
   return `<svg viewBox="0 0 40 40" class="pf pf-m-${motion}">
     <g class="pfu">
@@ -1344,12 +1486,18 @@ function renderExercisePicker(filterGroups) {
       (!searchTerm || ex.naam.toLowerCase().includes(searchTerm))
     );
 
-  row.innerHTML = list.length ? list.map(({ ex, i }) => `
+  row.innerHTML = list.length ? list.map(({ ex, i }) => {
+    const media = EXERCISE_MEDIA[ex.naam];
+    const visual = media
+      ? `<img class="ex-media" src="${media.photo || media.animation}" data-static="${media.photo || media.animation}" data-gif="${media.animation}" loading="lazy" alt="" />`
+      : pictogram(ex.motion);
+    return `
     <div class="exercise-card" data-idx="${i}" onclick="pickExercise(${i})">
-      ${pictogram(ex.motion)}
+      ${visual}
       <span class="ex-label">${ex.naam}</span>
     </div>
-  `).join('') : `<p class="muted" style="margin:0;">${searchTerm ? 'Geen oefeningen gevonden voor "' + searchTerm + '"' : 'Geen oefeningen in de bibliotheek voor deze spiergroep(en)/locatie'} — typ je oefening hieronder handmatig.</p>`;
+  `;
+  }).join('') : `<p class="muted" style="margin:0;">${searchTerm ? 'Geen oefeningen gevonden voor "' + searchTerm + '"' : 'Geen oefeningen in de bibliotheek voor deze spiergroep(en)/locatie'} — typ je oefening hieronder handmatig.</p>`;
 
   if (hint) {
     const parts = [];
@@ -1387,7 +1535,28 @@ function pickExercise(i) {
   updateBestSetHint(ex.naam, true);
   updateSecondaryMusclesHint(ex);
   toggleIntervalVisibility(ex.naam);
+  playExerciseGif(i);
 }
+
+// Gifjes in de oefeningkiezer staan standaard stil (de foto) en gaan pas
+// lopen zodra je erop tikt — daarna blijven ze net zolang herhalen tot je
+// een andere oefening of ergens anders op het scherm tikt.
+function playExerciseGif(i) {
+  document.querySelectorAll('#exercisePickerRow .exercise-card').forEach(c => {
+    const img = c.querySelector('.ex-media');
+    if (!img) return;
+    const idx = Number(c.getAttribute('data-idx'));
+    img.src = (idx === i && img.dataset.gif) ? img.dataset.gif : img.dataset.static;
+  });
+}
+function stopAllExerciseGifs() {
+  document.querySelectorAll('#exercisePickerRow .ex-media').forEach(img => {
+    if (img.dataset.static) img.src = img.dataset.static;
+  });
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#exercisePickerRow .exercise-card')) stopAllExerciseGifs();
+});
 
 let currentBestSet = null;
 
